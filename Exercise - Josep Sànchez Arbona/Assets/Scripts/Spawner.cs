@@ -4,8 +4,7 @@ using UnityEngine;
 
 public class Spawner : MonoBehaviour
 {
-
-    public List<ScriptableAnimalBase> animal1;
+    public List<AnimalBehaviour> animals;
 
     // Start is called before the first frame update
     void Start()
