@@ -31,7 +31,7 @@ public class ClientUDP : MonoBehaviour
         actualloops = 0;
 
         newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        ipep = new IPEndPoint((int)float.Parse("192.168.1.45"), 7000);
+        ipep = new IPEndPoint((int)float.Parse("127.0.0.1"), 3000);
         sendEnp = (EndPoint)ipep;
 
         mainThread = new Thread(MainLoop);
@@ -44,11 +44,11 @@ public class ClientUDP : MonoBehaviour
         {
             byte[] buffer = new byte[256];
             newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp);
-            Debug.Log("Sended: " + message);
+            Debug.Log("(client) Sended: " + message);
             //ChangeUIText(message);
 
             int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
-            Debug.Log("Received: " + System.Convert.ToBase64String(buffer));
+            Debug.Log("(client) Received: " + System.Convert.ToBase64String(buffer));
             //ChangeUIText(System.Convert.ToBase64String(buffer));
 
             Thread.Sleep(delayTime); //Do a delay (like the statement says)
@@ -63,5 +63,10 @@ public class ClientUDP : MonoBehaviour
     private void ChangeUIText(string _text)
     {
         uiText.text = _text;
+    }
+
+    private void OnDestroy()
+    {
+        newSocket.Close();
     }
 }
