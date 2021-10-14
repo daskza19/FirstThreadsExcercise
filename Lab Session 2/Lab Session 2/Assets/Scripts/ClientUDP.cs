@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using System.Threading;
 
 using System.Net;
@@ -22,7 +21,6 @@ public class ClientUDP : MonoBehaviour
     private int actualloops;
     public int delayTime = 5000;
     private bool isEnded;
-    public Text uiText;
 
     // Start is called before the first frame update
     void Start()
@@ -31,7 +29,7 @@ public class ClientUDP : MonoBehaviour
         actualloops = 0;
 
         newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        ipep = new IPEndPoint(IPAddress.Parse("147.83.144.2"), 1818);
+        ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1818);
         sendEnp = (EndPoint)ipep;
 
         mainThread = new Thread(MainLoop);
@@ -42,13 +40,13 @@ public class ClientUDP : MonoBehaviour
     {
         while (isEnded == false)
         {
-            newSocket.SendTo(System.Convert.FromBase64String(message), SocketFlags.None, sendEnp);
-            Debug.Log("(client) Sended: " + message);
-
-            byte[] buffer = new byte[256];
+            newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp); // Send to the server
+            Debug.Log("(client) Sended: " + message); // Do the debug
+            
+            byte[] buffer = new byte[3];
             int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
-            Debug.Log("(client) Received: " + System.Convert.ToBase64String(buffer));
-            //ChangeUIText(System.Convert.ToBase64String(buffer));
+            string receivedtext = System.Convert.ToBase64String(buffer); // Save the received text in new string, convert the bytes to a string
+            Debug.Log("(client) Received: " + receivedtext); // Do the debug
 
             Thread.Sleep(delayTime); //Do a delay (like the statement says)
 
@@ -57,11 +55,7 @@ public class ClientUDP : MonoBehaviour
             if (actualloops >= loops)
                 isEnded = true;
         }
-    }
-
-    private void ChangeUIText(string _text)
-    {
-        uiText.text = _text;
+        Debug.Log("Desconnecting client from actual server"); // Debug desconnection
     }
 
     private void OnDestroy()

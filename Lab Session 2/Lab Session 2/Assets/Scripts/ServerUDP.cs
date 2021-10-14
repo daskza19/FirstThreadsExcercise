@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading;
-using System.Text;
 
 using System.Net;
 using System.Net.Sockets;
@@ -18,7 +17,7 @@ public class ServerUDP : MonoBehaviour
 
     //Properties
     public string message = "PONG";
-    public int delayTime = 250;
+    public int delayTime = 100;
     private bool isEnded;
 
     // Start is called before the first frame update
@@ -38,13 +37,15 @@ public class ServerUDP : MonoBehaviour
     {
         while (isEnded == false)
         {
-            byte[] buffer = new byte[256];
+            byte[] buffer = new byte[3];
             int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
-            Debug.Log("(server) Received: " + Encoding.UTF8.GetString(buffer));
+            string receivedtext = System.Convert.ToBase64String(buffer);
+            Debug.Log("(server) Received: " + receivedtext);
 
             Thread.Sleep(delayTime); //Do a delay (like the statement says)
 
-            newSocket.SendTo(System.Convert.FromBase64String(message), SocketFlags.None, sendEnp);
+            newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp);
+
             Debug.Log("(server) Sended: " + message);
         }
     }
