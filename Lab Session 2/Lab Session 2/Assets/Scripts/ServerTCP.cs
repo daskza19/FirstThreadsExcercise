@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using System.Threading;
 
 using System.Net;
@@ -12,6 +13,7 @@ public class ServerTCP : MonoBehaviour
     private Socket newSocket;
     private IPEndPoint ipep;
     private EndPoint sendEnp;
+    private ClientTCP client;
 
     private Thread mainThread;
 
@@ -24,7 +26,7 @@ public class ServerTCP : MonoBehaviour
     void Start()
     {
         isEnded = false;
-        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ipep = new IPEndPoint(IPAddress.Any, 1818);
         sendEnp = (EndPoint)ipep;
 
@@ -35,6 +37,10 @@ public class ServerTCP : MonoBehaviour
 
     private void MainLoop()
     {
+        newSocket.Listen(10);
+
+        //client = newSocket.Accept();
+
         while (isEnded == false)
         {
             byte[] buffer = new byte[3];
