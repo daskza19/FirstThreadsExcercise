@@ -31,7 +31,7 @@ public class ClientUDP : MonoBehaviour
         actualloops = 0;
 
         newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        ipep = new IPEndPoint((int)float.Parse("127.0.0.1"), 3000);
+        ipep = new IPEndPoint(IPAddress.Parse("147.83.144.2"), 1818);
         sendEnp = (EndPoint)ipep;
 
         mainThread = new Thread(MainLoop);
@@ -42,11 +42,10 @@ public class ClientUDP : MonoBehaviour
     {
         while (isEnded == false)
         {
-            byte[] buffer = new byte[256];
-            newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp);
+            newSocket.SendTo(System.Convert.FromBase64String(message), SocketFlags.None, sendEnp);
             Debug.Log("(client) Sended: " + message);
-            //ChangeUIText(message);
 
+            byte[] buffer = new byte[256];
             int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
             Debug.Log("(client) Received: " + System.Convert.ToBase64String(buffer));
             //ChangeUIText(System.Convert.ToBase64String(buffer));
@@ -67,6 +66,7 @@ public class ClientUDP : MonoBehaviour
 
     private void OnDestroy()
     {
+        mainThread.Abort();
         newSocket.Close();
     }
 }
