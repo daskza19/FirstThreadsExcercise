@@ -49,35 +49,38 @@ public class ServerTCP : MonoBehaviour
         {
             newSocket.Listen(10);
             Debug.Log("Opening server with listening mode");
-            clientSocket = newSocket.Accept();
-            clientipep = (IPEndPoint)clientSocket.RemoteEndPoint;
-            Debug.Log("Connection with a client " + clientipep.Address + " at port " + clientipep.Port);
 
-            while (true)
+            while (true) // This while is here to reconnect if the while inside him finish
             {
+                clientSocket = newSocket.Accept();
+                clientipep = (IPEndPoint)clientSocket.RemoteEndPoint;
+                Debug.Log("Connection with a client " + clientipep.Address + " at port " + clientipep.Port);
 
-                recv = clientSocket.Receive(buffer, SocketFlags.None); //Receive from a client and do the debug
-
-                if(recv == 0)
+                while (true) // This while is all the logic to send and receive the debug logs
                 {
-                    Debug.Log("Client disconnected from server");
-                    break;
+                    recv = clientSocket.Receive(buffer, SocketFlags.None); //Receive from a client and do the debug
+
+                    if (recv == 0) // See if the client is disconnected and if it is, debug
+                    {
+                        Debug.Log("Client disconnected from server");
+                        break;
+                    }
+
+                    Debug.Log("(server) Received: " + System.Convert.ToBase64String(buffer));
+
+                    Thread.Sleep(2000); // Wait 2000 milliseconds to send the message
+
+                    recv = clientSocket.Send(System.Convert.FromBase64String(message), SocketFlags.None); // Send the server message
+                    Debug.Log("(server) Sended: " + message);
+
+                    if (recv == 0) // See if the client is disconnected and if it is, debug
+                    {
+                        Debug.Log("Client disconnected from server");
+                        break;
+                    }
+
+                    Thread.Sleep(2000); // Wait 2000 milliseconds to receive the message from client
                 }
-
-                Debug.Log("(server) Received: " + System.Convert.ToBase64String(buffer));
-
-                Thread.Sleep(2000);
-
-                recv = clientSocket.Send(System.Convert.FromBase64String(message), SocketFlags.None);
-                Debug.Log("(server) Sended: " + message);
-
-                if (recv == 0)
-                {
-                    Debug.Log("Client disconnected from server");
-                    break;
-                }
-
-                Thread.Sleep(2000);
             }
         }
         catch (SocketException socketException)

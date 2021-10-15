@@ -11,10 +11,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/ClientUDP.unity
     guid: 7aedb7bf67303064ab57868515f1addf
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/ClientTCP.unity
     guid: f8350c191acf4654f999efbdda8c6242
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/ServerTCP.unity
     guid: d5fca705fd099e74184a306e53201f29
   m_configObjects: {}

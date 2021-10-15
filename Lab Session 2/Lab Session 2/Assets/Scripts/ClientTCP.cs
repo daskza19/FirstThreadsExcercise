@@ -44,7 +44,7 @@ public class ClientTCP : MonoBehaviour
             newSocket.Connect(ipep);
             Debug.Log("Connection with server " + ipep.Address + " at port " + ipep.Port);
 
-            while (isEnded == false)
+            while (isEnded == false) // Do all the loops if the counts not reach the number yet, when finish disconnect from server
             {
                 if (!newSocket.Connected)
                     return;
