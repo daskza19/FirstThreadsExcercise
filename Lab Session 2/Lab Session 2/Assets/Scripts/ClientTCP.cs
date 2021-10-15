@@ -28,8 +28,8 @@ public class ClientTCP : MonoBehaviour
         isEnded = false;
         actualloops = 0;
 
-        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 1818);
+        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777);
         sendEnp = (EndPoint)ipep;
 
         mainThread = new Thread(MainLoop);
@@ -38,24 +38,38 @@ public class ClientTCP : MonoBehaviour
 
     private void MainLoop()
     {
-        while (isEnded == false)
+        try
         {
-            newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp); // Send to the server
-            Debug.Log("(client) Sended: " + message); // Do the debug
+            Debug.Log("Trying to connect with a server");
+            newSocket.Connect(ipep);
+            Debug.Log("Client connected to a server");
 
-            byte[] buffer = new byte[3];
-            int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
-            string receivedtext = System.Convert.ToBase64String(buffer); // Save the received text in new string, convert the bytes to a string
-            Debug.Log("(client) Received: " + receivedtext); // Do the debug
+            while (isEnded == false)
+            {
+                newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp); // Send to the server
+                Debug.Log("(client) Sended: " + message); // Do the debug
 
-            Thread.Sleep(delayTime); //Do a delay (like the statement says)
+                byte[] buffer = new byte[3];
+                int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
+                string receivedtext = System.Convert.ToBase64String(buffer); // Save the received text in new string, convert the bytes to a string
+                Debug.Log("(client) Received: " + receivedtext); // Do the debug
 
-            //Actualize the counter and the bool to exit the while
-            actualloops++;
-            if (actualloops >= loops)
-                isEnded = true;
+                Thread.Sleep(delayTime); //Do a delay (like the statement says)
+
+                //Actualize the counter and the bool to exit the while
+                actualloops++;
+                if (actualloops >= loops)
+                    isEnded = true;
+            }
+
+            Debug.Log("Desconnecting client from actual server"); // Debug desconnection
+            mainThread.Abort();
+            newSocket.Close();
         }
-        Debug.Log("Desconnecting client from actual server"); // Debug desconnection
+        catch (SocketException socketException)
+        {
+            Debug.Log("Socket exception: " + socketException);
+        }
     }
 
     private void OnDestroy()
