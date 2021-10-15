@@ -11,12 +11,12 @@ public class ClientTCP : MonoBehaviour
     //UDP Things
     private Socket newSocket;
     private IPEndPoint ipep;
-    private EndPoint sendEnp;
 
     private Thread mainThread;
 
     //Properties
     public string message = "PING";
+    private byte[] buffer;
     public int loops = 5;
     private int actualloops;
     public int delayTime = 5000;
@@ -26,11 +26,11 @@ public class ClientTCP : MonoBehaviour
     void Start()
     {
         isEnded = false;
+        buffer = new byte[3];
         actualloops = 0;
 
         newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 7777);
-        sendEnp = (EndPoint)ipep;
+        ipep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 59050);
 
         mainThread = new Thread(MainLoop);
         mainThread.Start();
@@ -42,19 +42,19 @@ public class ClientTCP : MonoBehaviour
         {
             Debug.Log("Trying to connect with a server");
             newSocket.Connect(ipep);
-            Debug.Log("Client connected to a server");
+            Debug.Log("Connection with server " + ipep.Address + " at port " + ipep.Port);
 
             while (isEnded == false)
             {
-                newSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, sendEnp); // Send to the server
+                if (!newSocket.Connected)
+                    return;
+
+                newSocket.Send(System.Convert.FromBase64String(message)); // Send to the server
                 Debug.Log("(client) Sended: " + message); // Do the debug
 
-                byte[] buffer = new byte[3];
-                int recv = newSocket.ReceiveFrom(buffer, ref sendEnp); //Receive from a client and do the debug
+                int recv = newSocket.Receive(buffer); //Receive from a client and do the debug
                 string receivedtext = System.Convert.ToBase64String(buffer); // Save the received text in new string, convert the bytes to a string
                 Debug.Log("(client) Received: " + receivedtext); // Do the debug
-
-                Thread.Sleep(delayTime); //Do a delay (like the statement says)
 
                 //Actualize the counter and the bool to exit the while
                 actualloops++;
@@ -62,13 +62,14 @@ public class ClientTCP : MonoBehaviour
                     isEnded = true;
             }
 
-            Debug.Log("Desconnecting client from actual server"); // Debug desconnection
-            mainThread.Abort();
-            newSocket.Close();
+            newSocket.Disconnect(false);
+            Debug.Log("Disconnected from server");
+            Application.Quit();
         }
-        catch (SocketException socketException)
+        catch (SocketException e)
         {
-            Debug.Log("Socket exception: " + socketException);
+            Debug.Log("Unable to connect with the server: "+ e);
+            return;
         }
     }
 

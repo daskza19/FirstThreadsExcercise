@@ -10,57 +10,74 @@ using System.Net.Sockets;
 public class ServerTCP : MonoBehaviour
 {
     //UDP Things
-    private Socket serverSocket;
-    private IPEndPoint serveripep;
-    private EndPoint serverSendEnp;
-
+    private Socket newSocket;
+    private IPEndPoint ipep;
     private Socket clientSocket;
     private IPEndPoint clientipep;
-    private EndPoint clientSendEnp;
+
+    private int recv;
+    private byte[] buffer;
 
     private Thread mainThread;
 
     //Properties
     public string message = "PONG";
-    public int delayTime = 100;
-    private bool isEnded;
+    public int delayTime = 200;
 
     // Start is called before the first frame update
     void Start()
     {
-        isEnded = false;
-        serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        serveripep = new IPEndPoint(IPAddress.Any, 7777);
-        serverSendEnp = (EndPoint)serveripep;
+        buffer = new byte[3];
+        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        ipep = new IPEndPoint(IPAddress.Any, 59050);
 
-        serverSocket.Bind(serveripep);
-        mainThread = new Thread(MainLoop);
-        mainThread.Start();
+        try
+        {
+            newSocket.Bind(ipep);
+            mainThread = new Thread(MainLoop);
+            mainThread.Start();
+        }
+        catch
+        {
+            Debug.Log("Bind error");
+        }
     }
 
     private void MainLoop()
     {
         try
         {
+            newSocket.Listen(10);
             Debug.Log("Opening server with listening mode");
-            serverSocket.Listen(10);
+            clientSocket = newSocket.Accept();
+            clientipep = (IPEndPoint)clientSocket.RemoteEndPoint;
+            Debug.Log("Connection with a client " + clientipep.Address + " at port " + clientipep.Port);
 
-            clientSocket = serverSocket.Accept();
-            Debug.Log("OMG connection with a client!");
-
-            while (isEnded == false)
+            while (true)
             {
-                byte[] buffer = new byte[3];
-                Debug.Log("A");
-                int recv = serverSocket.ReceiveFrom(buffer, ref serverSendEnp); //Receive from a client and do the debug
-                string receivedtext = System.Convert.ToBase64String(buffer);
-                Debug.Log("(server) Received: " + receivedtext);
 
-                Thread.Sleep(delayTime); //Do a delay (like the statement says)
+                recv = clientSocket.Receive(buffer, SocketFlags.None); //Receive from a client and do the debug
 
-                serverSocket.SendTo(System.Convert.FromBase64String(message), System.Convert.FromBase64String(message).Length, SocketFlags.None, serverSendEnp);
+                if(recv == 0)
+                {
+                    Debug.Log("Client disconnected from server");
+                    break;
+                }
 
+                Debug.Log("(server) Received: " + System.Convert.ToBase64String(buffer));
+
+                Thread.Sleep(2000);
+
+                recv = clientSocket.Send(System.Convert.FromBase64String(message), SocketFlags.None);
                 Debug.Log("(server) Sended: " + message);
+
+                if (recv == 0)
+                {
+                    Debug.Log("Client disconnected from server");
+                    break;
+                }
+
+                Thread.Sleep(2000);
             }
         }
         catch (SocketException socketException)
@@ -72,6 +89,6 @@ public class ServerTCP : MonoBehaviour
     private void OnDestroy()
     {
         mainThread.Abort();
-        serverSocket.Close();
+        newSocket.Close();
     }
 }
