@@ -16,6 +16,7 @@ public class TCPServer : MonoBehaviour
     public Color serverColor;
     public string welcomeMessage = "Hello new user!";
     public int host = 7777;
+    private MessagesList mList;
 
     //UI Things
     [Header("UI Things")]
@@ -24,7 +25,7 @@ public class TCPServer : MonoBehaviour
     public GameObject userList;
     public GameObject message;
     public Button sendbutton;
-    public Text sendText;
+    public InputField sendText;
     public CommandsList commands;
 
     //TCP Things
@@ -38,6 +39,7 @@ public class TCPServer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        mList = GetComponent<MessagesList>();
         buffer = new byte[3];
         newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         ipep = new IPEndPoint(IPAddress.Any, host);
@@ -79,6 +81,8 @@ public class TCPServer : MonoBehaviour
         if (sendText.text == "")
             return;
 
-        GameObject go = Instantiate(message, new Vector3(0, 0, 0), Quaternion.identity, sendArea.transform);
+        Message newMessage = new Message(serverName, serverColor, sendText.text);
+        newMessage.InstantiateNewMessage(message, sendArea, mList);
+        sendText.text = "";
     }
 }
