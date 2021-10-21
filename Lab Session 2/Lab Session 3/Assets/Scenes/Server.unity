@@ -269,11 +269,13 @@ MonoBehaviour:
   serverColor: {r: 0.25467247, g: 0.7540157, b: 0.9150943, a: 1}
   welcomeMessage: Hello new user!
   host: 7777
+  sendArea: {fileID: 7593237322844347048}
   serverList: {fileID: 1016730423011930194, guid: 50b13982a02b1a84197d42e1df81df05, type: 3}
   userList: {fileID: 5851265208270356267, guid: f0a67d9695c175f49adfc71ca17f0ca9, type: 3}
   message: {fileID: 5668861920330065516, guid: b428c2b09332168488d7e8aa48be3438, type: 3}
   sendbutton: {fileID: 2047369301}
   sendText: {fileID: 1205610776}
+  commands: {fileID: 11400000, guid: f42ae0b653d95484da87e18c2190b489, type: 2}
 --- !u!1 &1597462951
 GameObject:
   m_ObjectHideFlags: 0
@@ -573,6 +575,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 7641847251014f640a5b9cbf487144c2, type: 3}
+--- !u!1 &7593237322844347048 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 278888477562526395, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+  m_PrefabInstance: {fileID: 7691680368435413011}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &7593237323286934067 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 278888476868424224, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
@@ -688,6 +695,34 @@ PrefabInstance:
     - target: {fileID: 278888478009064424, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1395267427}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: SendMessage
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_TargetAssemblyTypeName
+      value: TCPServer, Assembly-CSharp
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691680366657544262, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
