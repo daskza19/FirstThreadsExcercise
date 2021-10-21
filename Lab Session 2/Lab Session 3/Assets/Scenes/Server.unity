@@ -206,15 +206,15 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1205610776 stripped
+--- !u!114 &1111263400 stripped
 MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 7691680367281727755, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
+  m_CorrespondingSourceObject: {fileID: 7691680366823379195, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
   m_PrefabInstance: {fileID: 7691680368435413011}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Script: {fileID: 11500000, guid: d199490a83bb2b844b9695cbf13b01ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!224 &1317371798 stripped
@@ -232,6 +232,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1395267426}
   - component: {fileID: 1395267427}
+  - component: {fileID: 1395267428}
   m_Layer: 0
   m_Name: Manager
   m_TagString: Untagged
@@ -274,8 +275,21 @@ MonoBehaviour:
   userList: {fileID: 5851265208270356267, guid: f0a67d9695c175f49adfc71ca17f0ca9, type: 3}
   message: {fileID: 5668861920330065516, guid: b428c2b09332168488d7e8aa48be3438, type: 3}
   sendbutton: {fileID: 2047369301}
-  sendText: {fileID: 1205610776}
+  sendText: {fileID: 1111263400}
   commands: {fileID: 11400000, guid: f42ae0b653d95484da87e18c2190b489, type: 2}
+--- !u!114 &1395267428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1395267425}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03aad829acaf49a41aa106343d186c14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  messagesList: []
 --- !u!1 &1597462951
 GameObject:
   m_ObjectHideFlags: 0
@@ -658,7 +672,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 278888476868424224, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.48989868
+      value: -0.48986816
       objectReference: {fileID: 0}
     - target: {fileID: 278888476868424224, guid: d284dc8901b8e9a4abff3d784de3a6ac, type: 3}
       propertyPath: m_AnchoredPosition.y
