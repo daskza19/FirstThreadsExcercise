@@ -3,16 +3,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Message : MonoBehaviour
+public class User : MonoBehaviour
 {
     public Text userName;
-    public Text message;
     public Image userColor;
 
-    public void SetMessage(string _userName, Color _userColor, string _message)
+    public void Setuser(string _userName, Color _userColor)
     {
         userName.text = _userName;
         userColor.color = _userColor;
-        message.text = _message;
     }
 }

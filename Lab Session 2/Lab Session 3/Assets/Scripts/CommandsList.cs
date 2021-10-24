@@ -1,9 +1,18 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "CommandsList", menuName = "ScriptableObjects/CommandsList", order = 1)]
+[CreateAssetMenu(fileName = "Commands", menuName = "ScriptableObjects/CommandsList")]
 public class CommandsList : ScriptableObject
 {
-    public List<string> commands;
+    [System.Serializable]
+    public class Command
+    {
+        public string commandName;
+        public int commandid;
+    }
+
+    [SerializeField]
+    public List<Command> commands;
 }
