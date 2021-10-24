@@ -12,3 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6259bcb086a5e114294a231893ae0b6b, type: 3}
   m_Name: Commands
   m_EditorClassIdentifier: 
+  commands:
+  - commandName: kick
+    commandid: 0
+  - commandName: color
+    commandid: 1
+  - commandName: help
+    commandid: 2
+  - commandName: whisper
+    commandid: 3
+  - commandName: changeName
+    commandid: 4
+  - commandName: deleteLast
+    commandid: 5
