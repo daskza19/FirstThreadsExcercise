@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CommandsManager : MonoBehaviour
 {
-    public bool CheckMessage(string _message, CommandsList _cList, List<GameObject> _messagesL, List<GameObject> _usersL)
+    public bool CheckMessage(string _message, CommandsList _cList, List<MessageBase> _messagesL, List<UserBase> _usersL)
     {
         bool containCommand = false;
         char[] chars = new char[_message.Length];

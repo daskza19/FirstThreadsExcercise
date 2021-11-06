@@ -8,9 +8,23 @@ public class User : MonoBehaviour
     public Text userName;
     public Image userColor;
 
-    public void Setuser(string _userName, Color _userColor)
+    public void SetUserPrefab(UserBase _user)
     {
-        userName.text = _userName;
-        userColor.color = _userColor;
+        userName.text = _user.userName;
+        userColor.color = _user.userColor;
+    }
+}
+
+public class UserBase : MonoBehaviour
+{
+    public string userName;
+    public Color userColor;
+    public bool isServer = false;
+
+    public void SetUser(string _userName, Color _userColor, bool _isServer = false)
+    {
+        userName = _userName;
+        userColor = _userColor;
+        isServer = _isServer;
     }
 }
