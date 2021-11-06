@@ -39,10 +39,10 @@ public class MessagesManager : MonoBehaviour
         {
             //Instantiate the new Message GameObject to see in screen
             GameObject newMessage = Instantiate(messagePrefab, new Vector3(0, 0, 0), Quaternion.identity, sendArea.transform);
-            newMessage.GetComponent<MessageContainer>().SetMessageToPrefab(_message.userName, _message.userColor, _message.message);
+            newMessage.GetComponent<MessageContainer>().SetMessageToPrefab(_message.user.userName, _message.user.userColor, _message.message);
 
             //Create the new Message Class and add to our current messages list
-            MessageBase _toSendMessage = new MessageBase(_message.userName, _message.userColor, _message.message);
+            MessageBase _toSendMessage = new MessageBase(_message.user, _message.message);
             messagesList.Add(_toSendMessage);
 
             //To send the message to the other clients

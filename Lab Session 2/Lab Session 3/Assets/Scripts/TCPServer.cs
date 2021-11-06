@@ -17,18 +17,13 @@ public class TCPServer : MonoBehaviour
     public Color serverColor;
     public string welcomeMessage = "Hello new user!";
     public int host = 7777;
-    private MessagesManager mManager;
     public Button sendbutton;
-
-    public bool wantToSend = false;
-    private MessageBase messageToSend = new MessageBase("Defalut Name", Color.white, "Default Message");
+    private UserBase serverUser;
+    private MessagesManager mManager;
 
     //TCP Things
-    private Socket newSocket;
-    private IPEndPoint ipep;
     private List<Socket> clientSocket;
     private int recv;
-    private byte[] buffer;
     private Thread mainThread;
     ArrayList listenList = new ArrayList();
     ArrayList acceptList = new ArrayList();
@@ -38,16 +33,16 @@ public class TCPServer : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //Get Manager to do all the things related to send/receive messages and actualize UI
         mManager = gameObject.GetComponent<MessagesManager>();
-        //mManager.AddUserToList(serverName, serverColor, userListArea, true);
-        messageToSend.SetMessage(serverName, serverColor, "Server ON! Enjoy the experience :D");
+
+        //Inicialize the first user (this server) and send the first message
+        serverUser = new UserBase(serverName, serverColor, true, host); //TCP Inicialitions are done in the constructor of this user
+        mManager.AddUserToList(serverUser);
+        MessageBase messageToSend = new MessageBase(serverUser, "Server ON! Enjoy the experience :D");
         mManager.SendMessage(messageToSend);
 
-
-        buffer = new byte[3];
-        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        ipep = new IPEndPoint(IPAddress.Any, host);
-
+        //Bind the socket of the server and start the main thread
         try
         {
             //newSocket.Bind(ipep);
@@ -67,13 +62,6 @@ public class TCPServer : MonoBehaviour
             //newSocket.Listen(10);
             //Debug.Log("Opening server with listening mode");
 
-            while (true)
-            {
-                if (wantToSend == true)
-                {
-                    mManager.SendMessage(messageToSend);
-                }
-            }
         }
         catch (SocketException socketException)
         {
@@ -83,14 +71,6 @@ public class TCPServer : MonoBehaviour
 
     private void Update()
     {
-        //Why I did this?
-        //actualCounterTime += Time.deltaTime;
-        //if (actualCounterTime >= maxCounterTime)
-        //{
-        //    Debug.Log("refresh!!");
-        //    actualCounterTime = 0;
-        //}
-
         //for (int i = 0; i < 3; i++)
         //{
         //    listenList[i] = new Socket(AddressFamily.InterNetwork,
@@ -111,7 +91,6 @@ public class TCPServer : MonoBehaviour
     private void OnDestroy()
     {
         mainThread.Abort();
-        newSocket.Close();
     }
 
     public void WantToSendMessage()
@@ -119,10 +98,7 @@ public class TCPServer : MonoBehaviour
         if (mManager.sendText.text == "")
             return;
 
-        //wantToSend = true;
-        //messageToSend.SetMessage(serverName, serverColor, mManager.sendText.text);
-        //mManager.sendText.text = "";
-        MessageBase newMessage = new MessageBase(serverName, serverColor, mManager.sendText.text);
+        MessageBase newMessage = new MessageBase(serverUser, mManager.sendText.text);
         mManager.SendMessage(newMessage);
     }
 }

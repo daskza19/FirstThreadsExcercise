@@ -5,28 +5,35 @@ using UnityEngine;
 
 public class MessageBase : MonoBehaviour
 {
-    public string userName;
     public string message;
-    public Color userColor;
+    public UserBase user;
     private MemoryStream stream;
 
-    public MessageBase(string _userName, Color _userColor, string _message)
+    public MessageBase(UserBase _user, string _message)
     {
-        userName=_userName;
-        userColor=_userColor;
-        message=_message;
+        if(user == null)
+        {
+            user = new UserBase(_user.userName, _user.userColor);
+        }
+        user.userName = _user.userName;
+        user.userColor = _user.userColor;
+        message = _message;
     }
 
-    public void SetMessage(string _userName, Color _userColor, string _message)
+    public void SetMessage(UserBase _user, string _message)
     {
-        userName = _userName;
-        userColor = _userColor;
+        if (user == null)
+        {
+            user = new UserBase(_user.userName, _user.userColor);
+        }
+        user.userName = _user.userName;
+        user.userColor = _user.userColor;
         message = _message;
     }
 
     public void SerializeMessage()
     {
-        var _m = new MessageBase(this.userName, this.userColor, this.message);
+        var _m = new MessageBase(this.user, this.message);
         string json = JsonUtility.ToJson(_m);
 
         stream = new MemoryStream();
@@ -36,10 +43,10 @@ public class MessageBase : MonoBehaviour
         Debug.Log("Message Serialized!");
     }
 
-
     public MessageBase DeserializeMessage()
     {
-        var _m = new MessageBase("Deafult Name", Color.white, "Default Message");
+        UserBase _receivedUser = new UserBase("Default User Name", Color.white);
+        var _m = new MessageBase(_receivedUser, "Default Message");
         BinaryReader reader = new BinaryReader(stream);
         stream.Seek(0, SeekOrigin.Begin);
 
