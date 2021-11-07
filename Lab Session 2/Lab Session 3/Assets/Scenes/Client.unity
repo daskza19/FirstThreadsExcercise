@@ -282,11 +282,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 47952ddffac40d2438059413bc7f7a8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clientName: Client 1
+  clientName: Charlie
   clientColor: {r: 1, g: 0, b: 0.0379858, a: 1}
   host: 7777
   sendbutton: {fileID: 798621851}
   wantToSendMessage: 0
+  wantToReceiveMessage: 0
+  wantToReceiveUserList: 0
 --- !u!114 &1395267428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -302,6 +304,7 @@ MonoBehaviour:
   userListPrefab: {fileID: 0}
   serverListPrefab: {fileID: 0}
   messagePrefab: {fileID: 0}
+  welcomeMessagePrefab: {fileID: 0}
   userListArea: {fileID: 284211402}
   sendArea: {fileID: 7593237322844347048}
   sendText: {fileID: 1111263400}

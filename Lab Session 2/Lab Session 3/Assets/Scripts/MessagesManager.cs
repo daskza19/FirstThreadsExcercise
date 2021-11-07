@@ -13,8 +13,10 @@ public class MessagesManager : MonoBehaviour
     public GameObject serverListPrefab;
     public GameObject messagePrefab;
     public GameObject welcomeMessagePrefab;
+    public GameObject helpMessagePrefab;
     public GameObject userListArea;
     private List<GameObject> userListPrefabs = new List<GameObject>();
+    private List<GameObject> messagesListPrefabs = new List<GameObject>();
     public GameObject sendArea;
     public InputField sendText;
 
@@ -35,6 +37,7 @@ public class MessagesManager : MonoBehaviour
     {
         messagePrefab = (GameObject)Resources.Load("Message");
         welcomeMessagePrefab = (GameObject)Resources.Load("WelcomeMessage");
+        helpMessagePrefab = (GameObject)Resources.Load("HelpMessage");
         userListPrefab = (GameObject)Resources.Load("UserPanel");
         serverListPrefab = (GameObject)Resources.Load("ServerPanel");
         cList = (CommandsList)Resources.Load("Commands");
@@ -48,20 +51,74 @@ public class MessagesManager : MonoBehaviour
     {
         bool isComand = false;
 
-        if (!comManager.CheckMessage(_message.message, cList, messagesList, usersList))
+        if (!isClient) //If the user is not a client check if the message contains a command
         {
-            if (!isClient)
-            {
-                InstantiateNewMessageToUI(_message); //If is client not actualize the UI, because the server will send the data
-                AddMessageToList(_message);
-            }
+            isComand = ManageCommands(_message, isComand);
+        }
+        else //If is client not actualize the UI and add it to a list, because the server will send the data after
+        {
             SerializeMessage(_message);
         }
-        else isComand = true;
 
         sendText.text = ""; //Reset Input Field text
         return isComand;
     }
+
+    public bool ManageCommands(MessageBase _message, bool isComand)
+    {
+        isComand = true;
+        switch (comManager.CheckMessage(_message.message, cList))
+        {
+            case (Command.KickUser):
+                for(int i = 0; i < userListPrefabs.Count; i++)
+                {
+                    if (_message.message.Contains(userListPrefabs[i].GetComponent<User>().userName.text))
+                    {
+                        usersList[i].newSocket.Disconnect(false);
+                        Destroy(userListPrefabs[i]);
+                        usersList.RemoveAt(i);
+                        break;
+                    }
+                }
+                Debug.Log("No user encountered with this name, not deleted");
+                break;
+            case (Command.Color): //Falta actualitzar automaticament la llista usuaris
+                UserBase _user = GetUserFromUserID(_message.userid);
+                if (_message.message.Contains("White")) _user.userColor = Color.white;
+                else if (_message.message.Contains("Blue")) _user.userColor = Color.blue;
+                else if (_message.message.Contains("Red")) _user.userColor = Color.red;
+                else if (_message.message.Contains("Green")) _user.userColor = Color.green;
+                else if (_message.message.Contains("Yellow")) _user.userColor = Color.yellow;
+                break;
+            case (Command.Help):
+                Debug.Log("Command Help DONE");
+                Instantiate(helpMessagePrefab, new Vector3(0, 0, 0), Quaternion.identity, sendArea.transform);
+                break;
+            case (Command.Whisper):
+
+                break;
+            case (Command.ChangeName): //Falta actualitzar automaticament la llista usuaris
+                var newName = _message.message.Substring(12);
+                UserBase _usermes = GetUserFromUserID(_message.userid);
+                _usermes.userName = newName;
+                break;
+            case (Command.DeleteLast):
+                if(messagesList.Count - 1 > 0)
+                {
+                    Destroy(messagesListPrefabs[messagesListPrefabs.Count - 1]);
+                    messagesList.RemoveAt(messagesList.Count - 1);
+                }
+                break;
+            default:
+                InstantiateNewMessageToUI(_message);
+                AddMessageToList(_message);
+                SerializeMessage(_message);
+                isComand = false;
+                break;
+        }
+        return isComand;
+    }
+
     public void AddMessageToList(MessageBase _m)
     {
         //Add the new message to our list
@@ -78,6 +135,7 @@ public class MessagesManager : MonoBehaviour
         {
             newMessage.GetComponent<MessageContainer>().SetMessageToPrefab(newuser.userName, newuser.userColor, _m.message, _m.isWelcomeMessage);
         }
+        messagesListPrefabs.Add(newMessage);
     }
     public void DeleteMessage(int index)
     {
@@ -188,7 +246,7 @@ public class MessagesManager : MonoBehaviour
 
         Debug.Log("User Serializated!" + usersStream.ToString());
     }
-    public void DeserializeUser()
+    public UserBase DeserializeUser()
     {
         BinaryReader reader = new BinaryReader(usersStream);
         usersStream.Seek(0, SeekOrigin.Begin);
@@ -210,7 +268,9 @@ public class MessagesManager : MonoBehaviour
 
         //Get the new message and actualize the UI and the list of messages
         AddUserToList(_user);
+        return _user;
     }
+
     public void SerializeUserList(List<UserBase> _user)
     {
         userListStream = new MemoryStream();
@@ -225,7 +285,6 @@ public class MessagesManager : MonoBehaviour
             writer.Write((int)_user[i].userColor.r);
             writer.Write((int)_user[i].userColor.g);
             writer.Write((int)_user[i].userColor.b);
-            writer.Write((int)_user[i].userColor.a);
             writer.Write(_user[i].userIP);
             writer.Write(_user[i].port);
             writer.Write(_user[i].isServer);
@@ -252,7 +311,7 @@ public class MessagesManager : MonoBehaviour
             _newUser.userColor.r = reader.ReadInt32();
             _newUser.userColor.g = reader.ReadInt32();
             _newUser.userColor.b = reader.ReadInt32();
-            _newUser.userColor.a = reader.ReadInt32();
+            _newUser.userColor.a = 255;
             _newUser.userIP = reader.ReadString();
             _newUser.port = reader.ReadInt32();
             _newUser.isServer = reader.ReadBoolean();

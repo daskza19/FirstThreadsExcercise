@@ -77,7 +77,7 @@ public class TCPClient : MonoBehaviour
                 while (true)
                 {
                     if (!clientUser.newSocket.Connected)
-                        return;
+                        break;
 
                     if (wantToSendMessage)
                     {
@@ -86,6 +86,8 @@ public class TCPClient : MonoBehaviour
                         Debug.Log("Message Sent!");
                     }
                 }
+                clientUser.newSocket.Disconnect(false);
+                Debug.Log("Disconnected from server");
             }
             catch (SocketException socketException)
             {
@@ -100,6 +102,13 @@ public class TCPClient : MonoBehaviour
         {
             byte[] messagebuffer = new byte[2048];
             recv = clientUser.newSocket.Receive(messagebuffer, SocketFlags.None);
+
+            if (recv == 0)
+            {
+                Debug.Log("User Disconnected from server");
+                break;
+            }
+
             mManager.messagesStream = new System.IO.MemoryStream(messagebuffer);
             wantToReceiveMessage = true;
         }
@@ -149,7 +158,7 @@ public class TCPClient : MonoBehaviour
             return;
 
         MessageBase newMessage = new MessageBase(clientUser.userid, mManager.sendText.text);
-        bool isComand = mManager.SendMessage(newMessage, true);
-        if(!isComand) wantToSendMessage = true;
+        mManager.SendMessage(newMessage, true);
+        wantToSendMessage = true;
     }
 }
