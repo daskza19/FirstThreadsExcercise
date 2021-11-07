@@ -81,6 +81,7 @@ public class TCPClient : MonoBehaviour
                 }
                 clientUser.newSocket.Disconnect(false);
                 Debug.Log("Disconnected from server");
+                Application.Quit();
             }
             catch (SocketException socketException)
             {
@@ -108,6 +109,7 @@ public class TCPClient : MonoBehaviour
         }
         clientUser.newSocket.Disconnect(false);
         Debug.Log("Disconnected from server");
+        Application.Quit();
     }
 
     private void Update()

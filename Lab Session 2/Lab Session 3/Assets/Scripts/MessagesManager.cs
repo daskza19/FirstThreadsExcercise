@@ -66,12 +66,14 @@ public class MessagesManager : MonoBehaviour
         isComand = true;
         switch (comManager.CheckMessage(_message.message, cList))
         {
-            case (Command.KickUser):
+            case (Command.KickUser): //Error
                 for(int i = 0; i < userListPrefabs.Count; i++)
                 {
                     if (_message.message.Contains(userListPrefabs[i].GetComponent<User>().userName.text))
                     {
-                        usersList[i].newSocket.Disconnect(false);
+                        Debug.Log(usersList[i].userName);
+                        usersList[i].newSocket.Disconnect(true);
+                        usersList[i].newSocket.Close();
                         Destroy(userListPrefabs[i]);
                         usersList.RemoveAt(i);
                         break;
@@ -79,7 +81,7 @@ public class MessagesManager : MonoBehaviour
                 }
                 Debug.Log("No user encountered with this name, not deleted");
                 break;
-            case (Command.Color): //Falta actualitzar automaticament la llista usuaris
+            case (Command.Color): //Command DONE
                 UserBase _user = GetUserFromUserID(_message.userid);
                 if (_message.message.Contains("White")) _user.userColor = Color.white;
                 else if (_message.message.Contains("Blue")) _user.userColor = Color.blue;
@@ -94,14 +96,14 @@ public class MessagesManager : MonoBehaviour
                 CreateNewUserList(newListColor);
                 tcpServer.wantToSendUsersList = true;
                 break;
-            case (Command.Help):
+            case (Command.Help): //Command DONE
                 Debug.Log("Command Help DONE");
                 Instantiate(helpMessagePrefab, new Vector3(0, 0, 0), Quaternion.identity, sendArea.transform);
                 break;
             case (Command.Whisper):
 
                 break;
-            case (Command.ChangeName): //Falta actualitzar automaticament la llista usuaris
+            case (Command.ChangeName): //Command DONE
                 var newName = _message.message.Substring(12);
                 UserBase _usermes = GetUserFromUserID(_message.userid);
                 _usermes.userName = newName;
@@ -114,8 +116,8 @@ public class MessagesManager : MonoBehaviour
                 CreateNewUserList(newListName);
                 tcpServer.wantToSendUsersList = true;
                 break;
-            case (Command.DeleteLast):
-                if(messagesList.Count - 1 > 0)
+            case (Command.DeleteLast): //Command DONE
+                if (messagesList.Count - 1 > 0)
                 {
                     Destroy(messagesListPrefabs[messagesListPrefabs.Count - 1]);
                     messagesList.RemoveAt(messagesList.Count - 1);
