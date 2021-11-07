@@ -272,11 +272,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   serverName: Server Name
-  serverColor: {r: 0.25467247, g: 0.7540157, b: 0.9150943, a: 1}
+  serverColor: {r: 0, g: 0.5882353, b: 1, a: 1}
   welcomeMessage: Hello new user!
   host: 7777
   sendbutton: {fileID: 0}
-  wantToSend: 0
+  receivedInfo: 0
+  wantToSendNewMessage: 0
+  wantToAddNewUser: 0
 --- !u!114 &1395267428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,6 +294,8 @@ MonoBehaviour:
   userListPrefab: {fileID: 0}
   serverListPrefab: {fileID: 0}
   messagePrefab: {fileID: 0}
+  welcomeMessagePrefab: {fileID: 0}
+  helpMessagePrefab: {fileID: 0}
   userListArea: {fileID: 284211402}
   sendArea: {fileID: 7593237322844347048}
   sendText: {fileID: 1111263400}

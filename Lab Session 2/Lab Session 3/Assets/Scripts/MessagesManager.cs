@@ -28,22 +28,19 @@ public class MessagesManager : MonoBehaviour
 
     [Header("Other")]
     public CommandsList commands;
-    public MemoryStream messagesStream;
-    public MemoryStream usersStream;
-    public MemoryStream userListStream;
+    public MemoryStream newStream;
+    private TCPServer tcpServer;
     #endregion
 
     public void Awake()
     {
+        tcpServer = GetComponent<TCPServer>();
         messagePrefab = (GameObject)Resources.Load("Message");
         welcomeMessagePrefab = (GameObject)Resources.Load("WelcomeMessage");
         helpMessagePrefab = (GameObject)Resources.Load("HelpMessage");
         userListPrefab = (GameObject)Resources.Load("UserPanel");
         serverListPrefab = (GameObject)Resources.Load("ServerPanel");
         cList = (CommandsList)Resources.Load("Commands");
-
-        messagesStream = new MemoryStream();
-        usersStream = new MemoryStream();
     }
 
     #region ManageMessages
@@ -89,6 +86,13 @@ public class MessagesManager : MonoBehaviour
                 else if (_message.message.Contains("Red")) _user.userColor = Color.red;
                 else if (_message.message.Contains("Green")) _user.userColor = Color.green;
                 else if (_message.message.Contains("Yellow")) _user.userColor = Color.yellow;
+                List<UserBase> newListColor = new List<UserBase>();
+                for(int i = 0; i < usersList.Count; i++)
+                {
+                    newListColor.Add(usersList[i]);
+                }
+                CreateNewUserList(newListColor);
+                tcpServer.wantToSendUsersList = true;
                 break;
             case (Command.Help):
                 Debug.Log("Command Help DONE");
@@ -101,6 +105,14 @@ public class MessagesManager : MonoBehaviour
                 var newName = _message.message.Substring(12);
                 UserBase _usermes = GetUserFromUserID(_message.userid);
                 _usermes.userName = newName;
+
+                List<UserBase> newListName = new List<UserBase>();
+                for (int i = 0; i < usersList.Count; i++)
+                {
+                    newListName.Add(usersList[i]);
+                }
+                CreateNewUserList(newListName);
+                tcpServer.wantToSendUsersList = true;
                 break;
             case (Command.DeleteLast):
                 if(messagesList.Count - 1 > 0)
@@ -201,36 +213,21 @@ public class MessagesManager : MonoBehaviour
     #region Serializables
     public void SerializeMessage(MessageBase _m)
     {
-        messagesStream = new MemoryStream();
-        BinaryWriter writer = new BinaryWriter(messagesStream);
+        newStream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(newStream);
+
+        writer.Write(0);
         writer.Write(_m.userid);
         writer.Write(_m.message);
         writer.Write(_m.isWelcomeMessage);
-        usersStream.Flush();
-        usersStream.Close();
+
     }
-    public void DeserializeMessage()
-    {
-        var _m = new MessageBase(0, "Default Message");
-        BinaryReader reader = new BinaryReader(messagesStream);
-        messagesStream.Seek(0, SeekOrigin.Begin);
-        reader.BaseStream.Seek(0, SeekOrigin.Begin);
-
-        _m.userid = reader.ReadInt32();
-        _m.message = reader.ReadString();
-        _m.isWelcomeMessage = reader.ReadBoolean();
-        usersStream.Flush();
-        usersStream.Close();
-
-        //Get the new message and actualize the UI and the list of messages
-        AddMessageToList(_m);
-        InstantiateNewMessageToUI(_m);
-    }
-
     public void SerializeUser(UserBase _user)
     {
-        usersStream = new MemoryStream();
-        BinaryWriter writer = new BinaryWriter(usersStream);
+        newStream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(newStream);
+
+        writer.Write(1);
         writer.Write(_user.userName);
         writer.Write(_user.userid);
         writer.Write((int)_user.userColor.r);
@@ -241,87 +238,97 @@ public class MessagesManager : MonoBehaviour
         writer.Write(_user.port);
         writer.Write(_user.isServer);
 
-        usersStream.Flush();
-        usersStream.Close();
-
-        Debug.Log("User Serializated!" + usersStream.ToString());
+        Debug.Log("User Serializated!");
     }
-    public UserBase DeserializeUser()
-    {
-        BinaryReader reader = new BinaryReader(usersStream);
-        usersStream.Seek(0, SeekOrigin.Begin);
-        reader.BaseStream.Seek(0, SeekOrigin.Begin);
-        var _user = new UserBase("Default User Name", Color.red);
-
-        _user.userName = reader.ReadString();
-        _user.userid = reader.ReadInt32();
-        _user.userColor.r = reader.ReadInt32();
-        _user.userColor.g = reader.ReadInt32();
-        _user.userColor.b = reader.ReadInt32();
-        _user.userColor.a = reader.ReadInt32();
-        _user.userIP = reader.ReadString();
-        _user.port = reader.ReadInt32();
-        _user.isServer = reader.ReadBoolean();
-
-        usersStream.Flush();
-        usersStream.Close();
-
-        //Get the new message and actualize the UI and the list of messages
-        AddUserToList(_user);
-        return _user;
-    }
-
     public void SerializeUserList(List<UserBase> _user)
     {
-        userListStream = new MemoryStream();
-        BinaryWriter writer = new BinaryWriter(userListStream);
-
+        newStream = new MemoryStream();
+        BinaryWriter writer = new BinaryWriter(newStream);
+        writer.Write(2);
         writer.Write(_user.Count);
 
         for (int i = 0; i < _user.Count; i++)
         {
             writer.Write(_user[i].userName);
             writer.Write(_user[i].userid);
-            writer.Write((int)_user[i].userColor.r);
-            writer.Write((int)_user[i].userColor.g);
-            writer.Write((int)_user[i].userColor.b);
+            writer.Write((double)_user[i].userColor.r);
+            writer.Write((double)_user[i].userColor.g);
+            writer.Write((double)_user[i].userColor.b);
+            writer.Write((double)_user[i].userColor.a);
             writer.Write(_user[i].userIP);
             writer.Write(_user[i].port);
             writer.Write(_user[i].isServer);
         }
-        userListStream.Flush();
-        userListStream.Close();
 
         Debug.Log("User List Serializated!");
     }
-    public void DeserializeUserList()
+    public void Deserialize()
     {
-        BinaryReader reader = new BinaryReader(userListStream);
-        userListStream.Seek(0, SeekOrigin.Begin);
+        BinaryReader reader = new BinaryReader(newStream);
+        newStream.Seek(0, SeekOrigin.Begin);
         reader.BaseStream.Seek(0, SeekOrigin.Begin);
-        List<UserBase> _userList = new List<UserBase>();
 
-        int listSize = reader.ReadInt32();
-        Debug.Log("List size: " + listSize);
-        for (int i = 0; i < listSize; i++)
+        int whois = reader.ReadInt32();
+
+        switch (whois)
         {
-            UserBase _newUser = new UserBase("Default User Name", Color.red);
-            _newUser.userName = reader.ReadString();
-            _newUser.userid = reader.ReadInt32();
-            _newUser.userColor.r = reader.ReadInt32();
-            _newUser.userColor.g = reader.ReadInt32();
-            _newUser.userColor.b = reader.ReadInt32();
-            _newUser.userColor.a = 255;
-            _newUser.userIP = reader.ReadString();
-            _newUser.port = reader.ReadInt32();
-            _newUser.isServer = reader.ReadBoolean();
-            _userList.Add(_newUser);
-        }
-        userListStream.Flush();
-        userListStream.Close();
+            case (1): //New User Case
+                var _user = new UserBase("Default User Name", Color.red);
 
-        //Get the new message and actualize the UI and the list of messages
-        CreateNewUserList(_userList);
+                _user.userName = reader.ReadString();
+                _user.userid = reader.ReadInt32();
+                _user.userColor.r = reader.ReadInt32();
+                _user.userColor.g = reader.ReadInt32();
+                _user.userColor.b = reader.ReadInt32();
+                _user.userColor.a = reader.ReadInt32();
+                _user.userIP = reader.ReadString();
+                _user.port = reader.ReadInt32();
+                _user.isServer = reader.ReadBoolean();
+
+                newStream.Flush();
+                newStream.Close();
+
+                //Get the new message and actualize the UI and the list of messages
+                AddUserToList(_user);
+                break;
+            case (2): //New User List Case
+                List<UserBase> _userList = new List<UserBase>();
+
+                int listSize = reader.ReadInt32();
+                Debug.Log("List size: " + listSize);
+                for (int i = 0; i < listSize; i++)
+                {
+                    UserBase _newUser = new UserBase("Default User Name", Color.red);
+                    _newUser.userName = reader.ReadString();
+                    _newUser.userid = reader.ReadInt32();
+                    _newUser.userColor.r = (float)reader.ReadDouble();
+                    _newUser.userColor.g = (float)reader.ReadDouble();
+                    _newUser.userColor.b = (float)reader.ReadDouble();
+                    _newUser.userColor.a = (float)reader.ReadDouble();
+                    _newUser.userIP = reader.ReadString();
+                    _newUser.port = reader.ReadInt32();
+                    _newUser.isServer = reader.ReadBoolean();
+                    _userList.Add(_newUser);
+                }
+                newStream.Flush();
+                newStream.Close();
+
+                //Get the new message and actualize the UI and the list of messages
+                CreateNewUserList(_userList);
+                break;
+            default: //Message Case (default)
+                var _m = new MessageBase(0, "Default Message");
+                _m.userid = reader.ReadInt32();
+                _m.message = reader.ReadString();
+                _m.isWelcomeMessage = reader.ReadBoolean();
+                newStream.Flush();
+                newStream.Close();
+
+                //Get the new message and actualize the UI and the list of messages
+                AddMessageToList(_m);
+                InstantiateNewMessageToUI(_m);
+                break;
+        }
     }
     #endregion
 }
