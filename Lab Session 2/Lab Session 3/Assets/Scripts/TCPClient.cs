@@ -19,15 +19,16 @@ public class TCPClient : MonoBehaviour
     private MessagesManager mManager;
 
     public bool wantToSendMessage = false;
+    public bool wantToReceiveMessage = false;
+    public bool wantToReceiveUserList = false;
     MessageBase messageToSend;
 
     //TCP Things
     private int recv;
     private Thread mainThread;
-    private Thread receiveThread;
+    private Thread receiveMessagesThread;
+    private Thread receiveUsersThread;
     #endregion
-
-    byte[] hola;
 
     // Start is called before the first frame update
     void Start()
@@ -56,18 +57,21 @@ public class TCPClient : MonoBehaviour
                 mManager.SerializeUser(clientUser);
                 clientUser.newSocket.Send(mManager.usersStream.ToArray());
 
-                //When the client already send the user, receive the list of actual users from the server
-                //clientUser.newSocket.Receive(mManager.messagesSendStream.ToArray());
+                //When the client connects with the server, starts two threads to receive the info (userlist and new messages).
+                //With that the client will have three threads, one to send a message when they want, another to
+                //stay receiving the new messages from the server and the last to get the entire users list.
+                receiveMessagesThread = new Thread(ReceiveMessagesLoop);
+                receiveMessagesThread.Start();
 
-                //When the client connects with the server, starts another thread to receive the date.
-                //With that the client will have two threads, one to send a message when they want and another to
-                //stay receiving the new messages from the server.
-                receiveThread = new Thread(ReceiveLoop);
-                receiveThread.Start();
+                byte[] userlistbuffer = new byte[4096];
+                recv = clientUser.newSocket.Receive(userlistbuffer, SocketFlags.None);
+                Debug.Log("User List Received");
+                mManager.userListStream = new System.IO.MemoryStream(userlistbuffer);
+                wantToReceiveUserList = true;
 
                 //After open the new thread to receive, start a infinite while to send the message when the user wants.
                 //But before, put wantToSend true to send the welcome message from this user.
-                messageToSend = new MessageBase(clientUser.userid, "Hi my name is " + clientName + " nice to meet you :)");
+                messageToSend = new MessageBase(clientUser.userid, "Hi my name is " + clientName + " nice to meet you :)", true);
                 mManager.SerializeMessage(messageToSend);
                 wantToSendMessage = true;
                 while (true)
@@ -77,7 +81,7 @@ public class TCPClient : MonoBehaviour
 
                     if (wantToSendMessage)
                     {
-                        clientUser.newSocket.Send(mManager.messagesSendStream.ToArray()); // Send to the server
+                        clientUser.newSocket.Send(mManager.messagesStream.ToArray()); // Send to the server
                         wantToSendMessage = false;
                         Debug.Log("Message Sent!");
                     }
@@ -90,18 +94,49 @@ public class TCPClient : MonoBehaviour
         }
     }
 
-    private void ReceiveLoop()
+    private void ReceiveMessagesLoop()
     {
         while (true)
         {
-            clientUser.newSocket.Receive(mManager.messagesSendStream.ToArray());
+            byte[] messagebuffer = new byte[2048];
+            recv = clientUser.newSocket.Receive(messagebuffer, SocketFlags.None);
+            mManager.messagesStream = new System.IO.MemoryStream(messagebuffer);
+            wantToReceiveMessage = true;
+        }
+    }
+
+    private void ReceiveUsersLoop()
+    {
+        Debug.Log("Hola");
+        while (true)
+        {
+            byte[] userlistbuffer = new byte[4096];
+            recv = clientUser.newSocket.Receive(userlistbuffer, SocketFlags.None);
+            Debug.Log("User List Received");
+            mManager.userListStream = new System.IO.MemoryStream(userlistbuffer);
+            wantToReceiveUserList = true;
+        }
+    }
+
+    private void Update()
+    {
+        if (wantToReceiveUserList)
+        {
+            Debug.Log("Want To Receive List");
+            mManager.DeserializeUserList();
+            wantToReceiveUserList = false;
+        }
+        if (wantToReceiveMessage)
+        {
             mManager.DeserializeMessage();
+            wantToReceiveMessage = false;
         }
     }
 
     private void OnDestroy()
     {
-        if(receiveThread != null) receiveThread.Abort();
+        if(receiveMessagesThread != null) receiveMessagesThread.Abort();
+        if (receiveUsersThread != null) receiveUsersThread.Abort();
         mainThread.Abort();
     }
 
@@ -114,7 +149,7 @@ public class TCPClient : MonoBehaviour
             return;
 
         MessageBase newMessage = new MessageBase(clientUser.userid, mManager.sendText.text);
-        mManager.SerializeMessage(newMessage);
-        wantToSendMessage = true;
+        bool isComand = mManager.SendMessage(newMessage, true);
+        if(!isComand) wantToSendMessage = true;
     }
 }
