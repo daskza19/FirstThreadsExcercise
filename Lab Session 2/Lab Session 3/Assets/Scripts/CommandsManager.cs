@@ -38,7 +38,6 @@ public class CommandsManager : MonoBehaviour
 
                         break;
                     case (5): // Delete the last message
-                        Destroy(_messagesL[_messagesL.Count-1]);
                         _messagesL.RemoveAt(_messagesL.Count-1);
                         break;
                     case (6):

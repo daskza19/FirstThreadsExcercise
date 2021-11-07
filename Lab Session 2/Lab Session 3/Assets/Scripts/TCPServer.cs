@@ -20,9 +20,11 @@ public class TCPServer : MonoBehaviour
     public Button sendbutton;
     private UserBase serverUser;
     private MessagesManager mManager;
+    public bool receivedInfo = false;
+    public bool wantToAddNewUser = false;
 
     //TCP Things
-    private List<Socket> clientSocket;
+    private Socket clientSocket;
     private int recv;
     private Thread mainThread;
     ArrayList listenList = new ArrayList();
@@ -39,29 +41,44 @@ public class TCPServer : MonoBehaviour
         //Inicialize the first user (this server) and send the first message
         serverUser = new UserBase(serverName, serverColor, true, host); //TCP Inicialitions are done in the constructor of this user
         mManager.AddUserToList(serverUser);
-        MessageBase messageToSend = new MessageBase(serverUser, "Server ON! Enjoy the experience :D");
+        MessageBase messageToSend = new MessageBase(serverUser.userid, "Server ON! Enjoy the experience :D");
         mManager.SendMessage(messageToSend);
 
-        //Bind the socket of the server and start the main thread
-        try
-        {
-            //newSocket.Bind(ipep);
-            mainThread = new Thread(MainLoop);
-            mainThread.Start();
-        }
-        catch
-        {
-            Debug.Log("Bind error");
-        }
+        //Start the main thread
+        mainThread = new Thread(MainLoop);
+        mainThread.Start();
     }
 
     private void MainLoop()
     {
         try
         { 
-            //newSocket.Listen(10);
-            //Debug.Log("Opening server with listening mode");
+            serverUser.newSocket.Listen(10);
+            Debug.Log("Opening server with listening mode");
+            while (true)
+            {
+                clientSocket = serverUser.newSocket.Accept();
 
+                //First receive the client user
+                byte[] userbuffer = new byte[2048];
+                recv = clientSocket.Receive(userbuffer, SocketFlags.None);
+                mManager.usersStream = new System.IO.MemoryStream(userbuffer);
+
+                //When the client is received, add to our list
+                Debug.Log("User received");
+                wantToAddNewUser = true;
+
+                Thread.Sleep(50);
+
+                while (true)
+                {
+                    byte[] messagebuffer = new byte[2048];
+                    recv = clientSocket.Receive(messagebuffer, SocketFlags.None);
+                    mManager.messagesSendStream = new System.IO.MemoryStream(messagebuffer);
+                    Debug.Log("Received");
+                    receivedInfo = true;
+                }
+            }
         }
         catch (SocketException socketException)
         {
@@ -71,6 +88,18 @@ public class TCPServer : MonoBehaviour
 
     private void Update()
     {
+        if (receivedInfo)
+        {
+            mManager.DeserializeMessage();
+            receivedInfo = false;
+        }
+        if (wantToAddNewUser)
+        {
+            mManager.DeserializeUser();
+            //After adding the user to our list, send to the user all the user list from server
+
+            wantToAddNewUser = false;
+        }
         //for (int i = 0; i < 3; i++)
         //{
         //    listenList[i] = new Socket(AddressFamily.InterNetwork,
@@ -90,7 +119,7 @@ public class TCPServer : MonoBehaviour
 
     private void OnDestroy()
     {
-        mainThread.Abort();
+        if (mainThread != null) mainThread.Abort();
     }
 
     public void WantToSendMessage()
@@ -98,7 +127,7 @@ public class TCPServer : MonoBehaviour
         if (mManager.sendText.text == "")
             return;
 
-        MessageBase newMessage = new MessageBase(serverUser, mManager.sendText.text);
+        MessageBase newMessage = new MessageBase(serverUser.userid, mManager.sendText.text);
         mManager.SendMessage(newMessage);
     }
 }

@@ -17,7 +17,8 @@ public class User : MonoBehaviour
     }
 }
 
-public class UserBase : MonoBehaviour
+[System.Serializable]
+public class UserBase
 {
     public string userName;
     public Color userColor;
@@ -25,11 +26,40 @@ public class UserBase : MonoBehaviour
     public int userid; //We use this id to not duplicate users in messages list, the messages contains a userid to link them
 
     public Socket newSocket;
-    private IPEndPoint ipep;
+    public IPEndPoint ipep;
     public string userIP = "127.0.0.1";
     public int port = 7777;
 
     public UserBase(string _userName, Color _userColor, bool _isServer = false, int _port = 7777, string _ip = "127.0.0.1")
+    {
+        userName = _userName;
+        userColor = _userColor;
+        isServer = _isServer;
+        userIP = _ip;
+        port = _port;
+        userid = Random.Range(0, int.MaxValue);
+
+        //TCP Start Inicialization
+        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        if (_isServer)
+        {
+            ipep = new IPEndPoint(IPAddress.Any, port);
+            try
+            {
+                newSocket.Bind(ipep);
+            }
+            catch
+            {
+                Debug.Log("User Bind error");
+            }
+        }
+        else
+        {
+            ipep = new IPEndPoint(IPAddress.Parse(_ip), port);
+        }
+    }
+
+    public void SetUser(string _userName, Color _userColor, bool _isServer = false, int _port = 7777, string _ip = "127.0.0.1")
     {
         userName = _userName;
         userColor = _userColor;
@@ -41,23 +71,19 @@ public class UserBase : MonoBehaviour
         if (_isServer)
         {
             ipep = new IPEndPoint(IPAddress.Any, port);
+            try
+            {
+                newSocket.Bind(ipep);
+            }
+            catch
+            {
+                Debug.Log("User Bind error");
+            }
         }
         else
         {
             ipep = new IPEndPoint(IPAddress.Parse(_ip), port);
         }
-    }
-
-    public void SetUser(string _userName, Color _userColor, string _ip = "127.0.0.1", int _port = 7777, bool _isServer = false)
-    {
-        userName = _userName;
-        userColor = _userColor;
-        isServer = _isServer;
-        userIP = _ip;
-        port = _port;
-
-        newSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        ipep = new IPEndPoint(IPAddress.Parse(_ip), port);
     }
 
     private void OnDestroy()
