@@ -71,11 +71,7 @@ public class MessagesManager : MonoBehaviour
                 {
                     if (_message.message.Contains(userListPrefabs[i].GetComponent<User>().userName.text))
                     {
-                        Debug.Log(usersList[i].userName);
-                        usersList[i].newSocket.Disconnect(true);
-                        usersList[i].newSocket.Close();
-                        Destroy(userListPrefabs[i]);
-                        usersList.RemoveAt(i);
+                        //TODO
                         break;
                     }
                 }

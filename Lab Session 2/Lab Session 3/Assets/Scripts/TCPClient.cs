@@ -44,17 +44,17 @@ public class TCPClient : MonoBehaviour
 
     private void MainLoop()
     {
-        while (!clientUser.newSocket.Connected)
+        while (!clientUser.userSockets[0].Connected)
         {
             try
             {
                 Debug.Log("Trying to connect with a server");
-                clientUser.newSocket.Connect(clientUser.ipep);
+                clientUser.userSockets[0].Connect(clientUser.ipep);
                 Debug.Log("Connection with server " + clientUser.ipep.Address + " at port " + clientUser.ipep.Port);
 
                 //When the client connects with the server, send the user to server (to enter to their list)
                 mManager.SerializeUser(clientUser);
-                clientUser.newSocket.Send(mManager.newStream.ToArray());
+                clientUser.userSockets[0].Send(mManager.newStream.ToArray());
 
                 //When the client connects with the server, two threads will be avaible.
                 //One of the threads (this) will be only to do the send work. The other thread will be the receive thread
@@ -73,17 +73,17 @@ public class TCPClient : MonoBehaviour
                 wantToSendMessage = true; // Send to the server
                 while (true)
                 {
-                    if (!clientUser.newSocket.Connected)
+                    if (!clientUser.userSockets[0].Connected)
                         break;
 
                     if (wantToSendMessage)
                     {
-                        clientUser.newSocket.Send(mManager.newStream.ToArray()); // Send to the server
+                        clientUser.userSockets[0].Send(mManager.newStream.ToArray()); // Send to the server
                         wantToSendMessage = false;
                         Debug.Log("Message Sent!");
                     }
                 }
-                clientUser.newSocket.Disconnect(false);
+                clientUser.userSockets[0].Disconnect(false);
                 Debug.Log("Disconnected from server");
                 Application.Quit();
             }
@@ -98,11 +98,11 @@ public class TCPClient : MonoBehaviour
     {
         while (true)
         {
-            if (!clientUser.newSocket.Connected)
+            if (!clientUser.userSockets[0].Connected)
                 break;
 
             byte[] buffer = new byte[4096];
-            recv = clientUser.newSocket.Receive(buffer, SocketFlags.None);
+            recv = clientUser.userSockets[0].Receive(buffer, SocketFlags.None);
             if (recv == 0)
             {
                 Debug.Log("User Disconnected from server");
@@ -111,7 +111,7 @@ public class TCPClient : MonoBehaviour
             mManager.newStream = new System.IO.MemoryStream(buffer);
             wantToActualizeReceive = true;
         }
-        clientUser.newSocket.Disconnect(false);
+        clientUser.userSockets[0].Disconnect(false);
         Debug.Log("Disconnected from server");
         Application.Quit();
     }
@@ -138,8 +138,10 @@ public class TCPClient : MonoBehaviour
         if (mManager.sendText.text == "") //First we check that the input text is not empty to not send a empty message
             return;
 
-        if (wantToSendMessage && clientUser.newSocket.Connected) //Second we check that this user is not already sending a message
+        if (wantToSendMessage && clientUser.userSockets[0].Connected) //Second we check that this user is not already sending a message
             return;
+
+        Debug.Log("Hola vull enviar un message");
 
         MessageBase newMessage = new MessageBase(clientUser.userid, mManager.sendText.text);
         mManager.SendMessage(newMessage, true);
