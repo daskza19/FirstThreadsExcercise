@@ -61,7 +61,11 @@ public class TCPClient : MonoBehaviour
                 receiveThread = new Thread(ReceiveLoop);
                 receiveThread.Start();
 
-                Thread.Sleep(250);
+                while (mManager.usersList.Count <= 1)
+                {
+                    Thread.Sleep(20);
+                }
+                
                 //After open the new thread to receive, start a infinite while to send the message when the user wants.
                 //But before, put wantToSend true to send the welcome message from this user.
                 messageToSend = new MessageBase(clientUser.userid, "Hi my name is " + clientName + " nice to meet you :)", true);
